@@ -108,22 +108,27 @@ export default function CreatePage() {
               required={true}
             />
           </div>
-          <Autocomplete
-            apiKey={apiKey}
-            style={{ width: "90%" }}
-            ref={locationInputRef}
-            onChange={handleLocationChange}
-            onPlaceSelected={(place) => {
-                  if (locationInputRef.current) {
-              console.log(locationInputRef.current.value);
-              console.log("Selected Place:", place.formatted_address);
-            }
-          }}
-            options={{
-              types: ["geocode", "establishment"],
-              componentRestrictions: { country: "au" },
-            }}
-          />;
+          <div className ="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Location
+            </label>
+            <Autocomplete
+              apiKey={apiKey}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              ref={locationInputRef}
+              placeholder=""
+              onChange={handleLocationChange}
+              onPlaceSelected={() => {
+                if (locationInputRef.current) {
+                  setEventLocation(locationInputRef.current.value);
+                }
+              }}
+              options={{
+                types: ["geocode", "establishment"],
+                componentRestrictions: { country: "au" },
+              }}
+            />
+            </div>
           <FormInputField
             label="Max Participants"
             type="number"
