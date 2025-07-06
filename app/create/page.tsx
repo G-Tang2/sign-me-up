@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Button from "../components/ui/Button";
 import FormInputField from "../components/ui/FormInputField";
 import FormInputSwitch from "../components/ui/FormInputSwitch";
+import Autocomplete from "react-google-autocomplete";
 
 type MaxParticipants = number | undefined;
 
@@ -29,6 +30,10 @@ export default function CreatePage() {
     fixed: false,
   });
 
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
+
+  const locationInputRef = useRef<HTMLInputElement>(null);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -43,6 +48,15 @@ export default function CreatePage() {
       maxParticipants,
     });
   };
+
+  const handleLocationChange = (e) => {
+    const selectedLocation = e.target.value;
+    console.log("Selected Location:", selectedLocation);
+    setEventLocation(selectedLocation);
+    // if (locationInputRef.current) {
+    //   locationInputRef.current.value = selectedLocation;
+    // }
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center p-12">
@@ -94,12 +108,22 @@ export default function CreatePage() {
               required={true}
             />
           </div>
-          <FormInputField
-            label="Location"
-            value={eventLocation}
-            onChange={(e) => setEventLocation(e.target.value)}
-            required={true}
-          />
+          <Autocomplete
+            apiKey={apiKey}
+            style={{ width: "90%" }}
+            ref={locationInputRef}
+            onChange={handleLocationChange}
+            onPlaceSelected={(place) => {
+                  if (locationInputRef.current) {
+              console.log(locationInputRef.current.value);
+              console.log("Selected Place:", place.formatted_address);
+            }
+          }}
+            options={{
+              types: ["geocode", "establishment"],
+              componentRestrictions: { country: "au" },
+            }}
+          />;
           <FormInputField
             label="Max Participants"
             type="number"
