@@ -118,7 +118,7 @@ export default function CreatePage() {
             multiLine={true}
           />
           <FormInputSwitch
-            label="Add a fee?"
+            label="Is there a fee?"
             checked={eventFee.hasFee}
             onChange={() =>
               setEventFee({
@@ -132,7 +132,7 @@ export default function CreatePage() {
           {eventFee.hasFee && (
             <>
               <FormInputSwitch
-                label="Is there a fixed fee?"
+                label="Is it a fixed fee?"
                 checked={eventFee.fixed}
                 onChange={() =>
                   setEventFee({ ...eventFee, fixed: !eventFee.fixed })
@@ -141,7 +141,7 @@ export default function CreatePage() {
               {eventFee.fixed && (
                 <div className="mt-4">
                   <FormInputField
-                    label="Event Fee (AUD)"
+                    label="Fee (AUD)"
                     type="number"
                     value={eventFee.fee ?? ""}
                     onChange={(e) =>
