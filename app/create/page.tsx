@@ -5,8 +5,7 @@ import dynamic from "next/dynamic";
 
 import Button from "../components/ui/Button";
 import FormInputField from "../components/ui/FormInputField";
-import FormInputSwitch from "../components/ui/FormInputSwitch";
-import Dropdown from "../components/ui/Dropdown";
+import Time from "../components/ui/Time";
 const SearchBoxWrapper = dynamic(
   () => import("../components/SearchBoxWrapper"),
   {
@@ -22,7 +21,8 @@ export default function CreatePage() {
   const [hostName, setHostName] = useState("");
   const [eventName, setEventName] = useState("");
   const [eventDate, setEventDate] = useState("");
-  const [eventTime, setEventTime] = useState("");
+  const [eventStartTime, setEventStartTime] = useState("");
+  const [eventEndTime, setEventEndTime] = useState("");
   const [eventDuration, setEventDuration] = useState<Duration>(undefined);
   const [eventLocation, setEventLocation] = useState({
     name: "",
@@ -33,19 +33,6 @@ export default function CreatePage() {
     useState<MaxParticipants>(undefined);
   const [eventFee, setEventFee] = useState<EventFee>(undefined);
 
-  const eventDurationOptions = [
-    { value: 0.5, label: "0.5 hours" },
-    { value: 1, label: "1 hr" },
-    { value: 1.5, label: "1.5 hours" },
-    { value: 2, label: "2 hrs" },
-    { value: 2.5, label: "2.5 hours" },
-    { value: 3, label: "3 hrs" },
-    { value: 3.5, label: "3.5 hrs" },
-    { value: 4, label: "4 hrs" },
-    { value: 4.5, label: "4.5 hrs" },
-    { value: 5, label: "5 hrs" }
-  ];
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -53,7 +40,8 @@ export default function CreatePage() {
     setHostName(hostName.trim());
     setEventName(eventName.trim());
     setEventDate(eventDate.trim());
-    setEventTime(eventTime.trim());
+    setEventStartTime(eventStartTime.trim());
+    setEventEndTime(eventEndTime.trim());
     setEventDuration(eventDuration);
     setEventDescription(eventDescription.trim());
     setEventLocation({
@@ -68,7 +56,8 @@ export default function CreatePage() {
     console.log("host name: ", hostName);
     console.log("event name: ", eventName);
     console.log("event date: ", eventDate);
-    console.log("event time: ", eventTime);
+    console.log("event start time: ", eventStartTime);
+    console.log("event end time: ", eventEndTime);
     console.log("event duration: ", eventDuration);
     console.log("event location: ", eventLocation);
     console.log("event description: ", eventDescription);
@@ -81,7 +70,8 @@ export default function CreatePage() {
   };
 
   const handleRetrieve = (res: any) => {
-    const feature_type = res.features[0].properties.type;
+    const feature_type = res.features[0].properties.feature_type;
+    console.log(res)
     if (feature_type === "address") {
       setEventLocation({
         name: "",
@@ -94,6 +84,8 @@ export default function CreatePage() {
       });
     }
   };
+
+
 
   return (
     <div className="flex min-h-screen flex-col items-center p-12">
@@ -116,36 +108,20 @@ export default function CreatePage() {
             onChange={(e) => setEventName(e.target.value)}
             required={true}
           />
-          <div className="flex gap-4">
-            <div className="w-1/2">
-              <FormInputField
-                label="Date"
-                type="date"
-                value={eventDate}
-                onChange={(e) => setEventDate(e.target.value)}
-                required={true}
-              />
-            </div>
-            <div className="w-1/2">
-              <FormInputField
-                label="Time"
-                type="time"
-                value={eventTime}
-                onChange={(e) => setEventTime(e.target.value)}
-                required={true}
-              />
-            </div>
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Duration (hrs)
-            </label>
-            <Dropdown
-              options={eventDurationOptions}
-              selectedValue={eventDuration !== undefined ? eventDuration : 0}
-              onSelect={setEventDuration}
-            />
-          </div>
+          <FormInputField
+            label="Date"
+            type="date"
+            value={eventDate}
+            onChange={(e) => setEventDate(e.target.value)}
+            required={true}
+          />
+          <Time 
+            leftValue={eventStartTime}
+            rightValue={eventEndTime}
+            leftOnChange={(e) => setEventStartTime(e.target.value)}
+            rightOnChange={(e) => setEventEndTime(e.target.value)}
+            required={true}
+          />
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Location

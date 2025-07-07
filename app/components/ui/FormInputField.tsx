@@ -1,6 +1,7 @@
 export default function InputField({
   label,
   type = "text",
+  className = "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500",
   placeholder,
   value,
   onChange,
@@ -9,6 +10,7 @@ export default function InputField({
 }: {
   label: string;
   type?: string;
+  className?: string;
   placeholder?: string;
   value: string | number | undefined;
   onChange: (
@@ -31,7 +33,7 @@ export default function InputField({
           placeholder={placeholder}
           value={value}
           onChange={onChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          className={className}
           required={required}
         />
       ) : (
@@ -40,7 +42,7 @@ export default function InputField({
           placeholder={placeholder}
           value={value}
           onChange={onChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          className={className}
           required={required}
         />
       )}
