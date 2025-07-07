@@ -17,6 +17,7 @@ export default function InputField({
       | React.ChangeEvent<HTMLTextAreaElement>
   ) => void;
   multiLine?: boolean;
+  step?: number;
   required?: boolean;
 }) {
   return (

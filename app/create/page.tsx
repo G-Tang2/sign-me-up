@@ -1,62 +1,99 @@
 "use client";
 
 import { useRef, useState } from "react";
+import dynamic from "next/dynamic";
+
 import Button from "../components/ui/Button";
 import FormInputField from "../components/ui/FormInputField";
 import FormInputSwitch from "../components/ui/FormInputSwitch";
-import Autocomplete from "react-google-autocomplete";
+import Dropdown from "../components/ui/Dropdown";
+const SearchBoxWrapper = dynamic(
+  () => import("../components/SearchBoxWrapper"),
+  {
+    ssr: false,
+  }
+);
 
+type Duration = number | undefined;
 type MaxParticipants = number | undefined;
-
-type EventFee = {
-  hasFee: boolean;
-  fee: number | undefined;
-  fixed: boolean;
-};
+type EventFee = number | undefined;
 
 export default function CreatePage() {
   const [hostName, setHostName] = useState("");
   const [eventName, setEventName] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
-  const [eventDuration, setEventDuration] = useState("");
-  const [eventLocation, setEventLocation] = useState("");
+  const [eventDuration, setEventDuration] = useState<Duration>(undefined);
+  const [eventLocation, setEventLocation] = useState({
+    name: "",
+    full_address: "",
+  });
   const [eventDescription, setEventDescription] = useState("");
   const [maxParticipants, setMaxParticipants] =
     useState<MaxParticipants>(undefined);
-  const [eventFee, setEventFee] = useState<EventFee>({
-    hasFee: false,
-    fee: undefined,
-    fixed: false,
-  });
+  const [eventFee, setEventFee] = useState<EventFee>(undefined);
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
-
-  const locationInputRef = useRef<HTMLInputElement>(null);
+  const eventDurationOptions = [
+    { value: 0.5, label: "0.5 hours" },
+    { value: 1, label: "1 hr" },
+    { value: 1.5, label: "1.5 hours" },
+    { value: 2, label: "2 hrs" },
+    { value: 2.5, label: "2.5 hours" },
+    { value: 3, label: "3 hrs" },
+    { value: 3.5, label: "3.5 hrs" },
+    { value: 4, label: "4 hrs" },
+    { value: 4.5, label: "4.5 hrs" },
+    { value: 5, label: "5 hrs" }
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log({
-      hostName,
-      eventName,
-      eventDate,
-      eventTime,
-      eventLocation,
-      eventDescription,
-      eventFee,
-      maxParticipants,
+    // trim all input values
+    setHostName(hostName.trim());
+    setEventName(eventName.trim());
+    setEventDate(eventDate.trim());
+    setEventTime(eventTime.trim());
+    setEventDuration(eventDuration);
+    setEventDescription(eventDescription.trim());
+    setEventLocation({
+      name: eventLocation.name.trim(),
+      full_address: eventLocation.full_address.trim(),
     });
+    setMaxParticipants(
+      maxParticipants === undefined || maxParticipants < 1
+        ? undefined
+        : maxParticipants
+    );
+    console.log("host name: ", hostName);
+    console.log("event name: ", eventName);
+    console.log("event date: ", eventDate);
+    console.log("event time: ", eventTime);
+    console.log("event duration: ", eventDuration);
+    console.log("event location: ", eventLocation);
+    console.log("event description: ", eventDescription);
+    console.log("max participants: ", maxParticipants);
+    console.log("event fee: ", eventFee);
   };
 
-  const handleLocationChange = (e) => {
-    const selectedLocation = e.target.value;
-    console.log("Selected Location:", selectedLocation);
-    setEventLocation(selectedLocation);
-    // if (locationInputRef.current) {
-    //   locationInputRef.current.value = selectedLocation;
-    // }
-  }
+  const handleLocationChange = (d: string) => {
+    setEventLocation({ name: "", full_address: d });
+  };
+
+  const handleRetrieve = (res: any) => {
+    const feature_type = res.features[0].properties.type;
+    if (feature_type === "address") {
+      setEventLocation({
+        name: "",
+        full_address: res.features[0].properties.full_address,
+      });
+    } else {
+      setEventLocation({
+        name: res.features[0].properties.name,
+        full_address: res.features[0].properties.full_address,
+      });
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center p-12">
@@ -79,56 +116,60 @@ export default function CreatePage() {
             onChange={(e) => setEventName(e.target.value)}
             required={true}
           />
-          <FormInputField
-            label="Date"
-            type="date"
-            value={eventDate}
-            onChange={(e) => setEventDate(e.target.value)}
-            required={true}
-          />
-          <FormInputField
-            label="Time"
-            type="time"
-            value={eventTime}
-            onChange={(e) => setEventTime(e.target.value)}
-            required={true}
-          />
+          <div className="flex gap-4">
+            <div className="w-1/2">
+              <FormInputField
+                label="Date"
+                type="date"
+                value={eventDate}
+                onChange={(e) => setEventDate(e.target.value)}
+                required={true}
+              />
+            </div>
+            <div className="w-1/2">
+              <FormInputField
+                label="Time"
+                type="time"
+                value={eventTime}
+                onChange={(e) => setEventTime(e.target.value)}
+                required={true}
+              />
+            </div>
+          </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Duration (hrs)
             </label>
-            <input
-              type="number"
-              min={0.5}
-              max={6}
-              step={0.5}
-              value={eventDuration}
-              onChange={(e) => setEventDuration(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              required={true}
+            <Dropdown
+              options={eventDurationOptions}
+              selectedValue={eventDuration !== undefined ? eventDuration : 0}
+              onSelect={setEventDuration}
             />
           </div>
-          <div className ="mb-4">
+          <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Location
             </label>
-            <Autocomplete
-              apiKey={apiKey}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              ref={locationInputRef}
-              placeholder=""
+            <SearchBoxWrapper
+              value={(
+                eventLocation.name +
+                " " +
+                eventLocation.full_address
+              ).trim()}
               onChange={handleLocationChange}
-              onPlaceSelected={() => {
-                if (locationInputRef.current) {
-                  setEventLocation(locationInputRef.current.value);
-                }
-              }}
-              options={{
-                types: ["geocode", "establishment"],
-                componentRestrictions: { country: "au" },
-              }}
+              onRetrieve={handleRetrieve}
             />
-            </div>
+          </div>
+          <FormInputField
+            label="Fee (AUD)"
+            type="number"
+            value={eventFee ?? ""}
+            onChange={(e) =>
+              setEventFee(
+                e.target.value === "" ? undefined : Number(e.target.value)
+              )
+            }
+          />
           <FormInputField
             label="Max Participants"
             type="number"
@@ -139,6 +180,7 @@ export default function CreatePage() {
               )
             }
           />
+
           <FormInputField
             label="Description"
             type="textarea"
@@ -146,47 +188,6 @@ export default function CreatePage() {
             onChange={(e) => setEventDescription(e.target.value)}
             multiLine={true}
           />
-          <FormInputSwitch
-            label="Is there a fee?"
-            checked={eventFee.hasFee}
-            onChange={() =>
-              setEventFee({
-                ...eventFee,
-                fee: undefined,
-                hasFee: !eventFee.hasFee,
-                fixed: false,
-              })
-            }
-          />
-          {eventFee.hasFee && (
-            <>
-              <FormInputSwitch
-                label="Is it a fixed fee?"
-                checked={eventFee.fixed}
-                onChange={() =>
-                  setEventFee({ ...eventFee, fixed: !eventFee.fixed })
-                }
-              />
-              {eventFee.fixed && (
-                <div className="mt-4">
-                  <FormInputField
-                    label="Fee (AUD)"
-                    type="number"
-                    value={eventFee.fee ?? ""}
-                    onChange={(e) =>
-                      setEventFee({
-                        ...eventFee,
-                        fee:
-                          e.target.value === ""
-                            ? undefined
-                            : Number(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-              )}
-            </>
-          )}
         </div>
         <Button text="Submit" />
       </form>
