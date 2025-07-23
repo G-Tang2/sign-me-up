@@ -17,24 +17,13 @@ export default function AuthCallback() {
         console.error("No user found after authentication");
         return;
       }
-
-      console.log("User authenticated:", user.id, user.user_metadata.full_name);
-
-      const { data: existingUser, error: fetchError } = await supabase
-        .from("users")
-        .select("id")
-        .eq("id", user.id)
-        .maybeSingle();
-        if (fetchError) {
-        console.error("Error fetching user:", fetchError.message);
-        return;}
-
-      if (!existingUser) {
-        await supabase.from("users").insert({
+      await supabase.from("users").upsert(
+        {
           id: user.id,
           name: user.user_metadata.full_name || "user",
-        });
-      }
+        },
+        { onConflict: "id", ignoreDuplicates: true }
+      );
       router.push("/create");
     };
     insertNewUser();
