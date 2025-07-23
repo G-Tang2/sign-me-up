@@ -1,7 +1,28 @@
+"use client";
+
+import { supabase } from "./lib/supabase";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import Button from "./components/ui/Button";
-import Link from "next/link";
+import Spinner from "./components/ui/Spinner";
 
 export default function Home() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  const handleClick = async () => {
+    setLoading(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    setLoading(false);
+
+    if (user) {
+      router.push("/create");
+    } else {
+      router.push("/auth/login");
+    }
+  };
   return (
     <main className="flex min-h-screen flex-col items-center p-24">
       <h1 className="text-4xl font-bold">Simple Event Planning Made Easy</h1>
@@ -9,9 +30,13 @@ export default function Home() {
         Create events in seconds and send a unique link to invite friends. No
         apps, no fuss — just simple, seamless planning from any device.
       </p>
-      <Link href="/create">
-        <Button text="Create An Event" />
-      </Link>
+      {loading ? (
+        <div className="mt-6">
+          <Spinner />
+        </div>
+      ) : (
+        <Button text="Get Started" onClick={handleClick} />
+      )}
     </main>
   );
 }

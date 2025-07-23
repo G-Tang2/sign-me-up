@@ -16,9 +16,10 @@ export default function LoginPage() {
       <h1>Login</h1>
       <button
         onClick={handleGoogleLogin}
-        className="bg-blue-500 text-white px-4 py-2 rounded"
+        className="bg-white text-grey px-4 py-2 rounded shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center"
       >
-        Sign in with Google
+        Login with Google 
+        <img src="/google.svg" alt="Google Icon" className="inline-block ml-2 w-5 h-5" />
       </button>
     </div>
   );
