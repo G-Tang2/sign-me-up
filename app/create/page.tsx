@@ -113,6 +113,8 @@ export default function CreatePage() {
       console.error("Event error", eventError);
     }
 
+    router.push("/success")
+
     setLoading(false);
   };
 
