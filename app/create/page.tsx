@@ -1,11 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-
+import { useRouter } from "next/navigation";
+import { supabase } from "@/app/lib/supabase";
 import Button from "../components/ui/Button";
 import FormInputField from "../components/ui/FormInputField";
 import Time from "../components/ui/Time";
+import Spinner from "../components/ui/Spinner";
+import { User } from "@supabase/auth-js";
 const SearchBoxWrapper = dynamic(
   () => import("../components/SearchBoxWrapper"),
   {
@@ -18,6 +21,10 @@ type MaxParticipants = number | undefined;
 type EventFee = number | undefined;
 
 export default function CreatePage() {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+
   const [hostName, setHostName] = useState("");
   const [eventName, setEventName] = useState("");
   const [eventDate, setEventDate] = useState("");
@@ -32,6 +39,23 @@ export default function CreatePage() {
   const [maxParticipants, setMaxParticipants] =
     useState<MaxParticipants>(undefined);
   const [eventFee, setEventFee] = useState<EventFee>(undefined);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.replace("/login");
+      }
+      else {
+        setUser(user);
+      }
+      setLoading(false);
+      console.log("User: ", user);
+    };
+    checkUser();
+  }, [router]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +95,7 @@ export default function CreatePage() {
 
   const handleRetrieve = (res: any) => {
     const feature_type = res.features[0].properties.feature_type;
-    console.log(res)
+    console.log(res);
     if (feature_type === "address") {
       setEventLocation({
         name: "",
@@ -85,7 +109,13 @@ export default function CreatePage() {
     }
   };
 
-
+  if (loading || !user) {
+    return (
+      <div className="flex items-center justify-center h-screen w-screen">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center p-12">
@@ -115,7 +145,7 @@ export default function CreatePage() {
             onChange={(e) => setEventDate(e.target.value)}
             required={true}
           />
-          <Time 
+          <Time
             leftValue={eventStartTime}
             rightValue={eventEndTime}
             leftOnChange={(e) => setEventStartTime(e.target.value)}

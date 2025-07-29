@@ -20,7 +20,7 @@ export default function Home() {
     if (user) {
       router.push("/create");
     } else {
-      router.push("/auth/login");
+      router.push("/login");
     }
   };
   return (
