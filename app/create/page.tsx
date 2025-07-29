@@ -16,7 +16,6 @@ const SearchBoxWrapper = dynamic(
   }
 );
 
-type Duration = number | undefined;
 type MaxParticipants = number | undefined;
 type EventFee = number | undefined;
 
@@ -25,15 +24,13 @@ export default function CreatePage() {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
-  const [hostName, setHostName] = useState("");
   const [eventName, setEventName] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventStartTime, setEventStartTime] = useState("");
   const [eventEndTime, setEventEndTime] = useState("");
-  const [eventDuration, setEventDuration] = useState<Duration>(undefined);
   const [eventLocation, setEventLocation] = useState({
     name: "",
-    full_address: "",
+    address: "",
   });
   const [eventDescription, setEventDescription] = useState("");
   const [maxParticipants, setMaxParticipants] =
@@ -47,64 +44,93 @@ export default function CreatePage() {
       } = await supabase.auth.getUser();
       if (!user) {
         router.replace("/login");
-      }
-      else {
+      } else {
         setUser(user);
       }
       setLoading(false);
-      console.log("User: ", user);
     };
     checkUser();
   }, [router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    setLoading(true);
     e.preventDefault();
 
     // trim all input values
-    setHostName(hostName.trim());
     setEventName(eventName.trim());
     setEventDate(eventDate.trim());
     setEventStartTime(eventStartTime.trim());
     setEventEndTime(eventEndTime.trim());
-    setEventDuration(eventDuration);
     setEventDescription(eventDescription.trim());
     setEventLocation({
       name: eventLocation.name.trim(),
-      full_address: eventLocation.full_address.trim(),
+      address: eventLocation.address.trim(),
     });
     setMaxParticipants(
       maxParticipants === undefined || maxParticipants < 1
         ? undefined
         : maxParticipants
     );
-    console.log("host name: ", hostName);
+    console.log("created by: ", user?.id);
     console.log("event name: ", eventName);
     console.log("event date: ", eventDate);
     console.log("event start time: ", eventStartTime);
     console.log("event end time: ", eventEndTime);
-    console.log("event duration: ", eventDuration);
     console.log("event location: ", eventLocation);
     console.log("event description: ", eventDescription);
     console.log("max participants: ", maxParticipants);
     console.log("event fee: ", eventFee);
+
+    const { data: location, error: locationError } = await supabase
+      .from("locations")
+      .upsert([
+        {
+          name: eventLocation.name,
+          address: eventLocation.address,
+        },
+      ], { onConflict: 'address'})
+      .select()
+      .single();
+    if (locationError) {
+      console.log("Error saving location: " + locationError.message);
+      return;
+    }
+
+    const { error: eventError } = await supabase.from("events").upsert([
+      {
+        created_by: user?.id,
+        event_name: eventName,
+        date: eventDate,
+        start_time: eventStartTime,
+        end_time: eventEndTime,
+        location_id: location.id,
+        max_participants: maxParticipants,
+        event_fee: eventFee,
+      },
+    ]);
+
+        if (eventError) {
+      console.error("Event error", eventError);
+    }
+
+    setLoading(false);
   };
 
   const handleLocationChange = (d: string) => {
-    setEventLocation({ name: "", full_address: d });
+    setEventLocation({ name: "", address: d });
   };
 
   const handleRetrieve = (res: any) => {
     const feature_type = res.features[0].properties.feature_type;
-    console.log(res);
     if (feature_type === "address") {
       setEventLocation({
         name: "",
-        full_address: res.features[0].properties.full_address,
+        address: res.features[0].properties.full_address,
       });
     } else {
       setEventLocation({
         name: res.features[0].properties.name,
-        full_address: res.features[0].properties.full_address,
+        address: res.features[0].properties.full_address,
       });
     }
   };
@@ -126,12 +152,6 @@ export default function CreatePage() {
       </p>
       <form onSubmit={handleSubmit} className="mt-8 w-full max-w-md space-y-4">
         <div>
-          <FormInputField
-            label="Host Name"
-            value={hostName}
-            onChange={(e) => setHostName(e.target.value)}
-            required={true}
-          />
           <FormInputField
             label="Event Name"
             value={eventName}
@@ -157,11 +177,7 @@ export default function CreatePage() {
               Location
             </label>
             <SearchBoxWrapper
-              value={(
-                eventLocation.name +
-                " " +
-                eventLocation.full_address
-              ).trim()}
+              value={(eventLocation.name + " " + eventLocation.address).trim()}
               onChange={handleLocationChange}
               onRetrieve={handleRetrieve}
             />
