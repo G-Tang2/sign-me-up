@@ -40,7 +40,7 @@ export default function Navbar() {
               <UserIcon className="w-6 h-6" />
             </button>
           ) : (
-            <Link href="/auth/login" className="text-sm hover:underline mr-6">
+            <Link href="/login" className="text-sm hover:underline mr-6">
               Login
             </Link>
           )}
