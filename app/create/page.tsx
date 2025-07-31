@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabase";
+import { nanoid } from "nanoid";
 import Button from "../components/ui/Button";
 import FormInputField from "../components/ui/FormInputField";
 import Time from "../components/ui/Time";
@@ -18,6 +19,17 @@ const SearchBoxWrapper = dynamic(
 
 type MaxParticipants = number | undefined;
 type EventFee = number | undefined;
+type EventData = {
+  created_by: string;
+  event_name: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  location_id: number;
+  description: string;
+  max_participants?: MaxParticipants;
+  event_fee?: EventFee;
+};
 
 export default function CreatePage() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -52,6 +64,31 @@ export default function CreatePage() {
     checkUser();
   }, [router]);
 
+  const createEvent = async (data: EventData) => {
+    let attempts = 0;
+    const maxAttempts = 5;
+    while (attempts < maxAttempts) {
+      const short_id = nanoid(10);
+      console.log("Generated short id: ", short_id);
+      const { error } = await supabase.from("events").upsert([
+        {
+          ...data,
+          url_id: short_id,
+        },
+      ]);
+
+      if (!error) {
+        return { success: true };
+      }
+      if (error.code !== "23505") {
+        // 23505 is the unique violation error code
+        return { success: false, error };
+      }
+      attempts++;
+    }
+    return { success: false, error: 'Too many attempts (5) to generate unique short id' };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     setLoading(true);
     e.preventDefault();
@@ -83,12 +120,15 @@ export default function CreatePage() {
 
     const { data: location, error: locationError } = await supabase
       .from("locations")
-      .upsert([
-        {
-          name: eventLocation.name,
-          address: eventLocation.address,
-        },
-      ], { onConflict: 'address'})
+      .upsert(
+        [
+          {
+            name: eventLocation.name,
+            address: eventLocation.address,
+          },
+        ],
+        { onConflict: "address" }
+      )
       .select()
       .single();
     if (locationError) {
@@ -96,24 +136,31 @@ export default function CreatePage() {
       return;
     }
 
-    const { error: eventError } = await supabase.from("events").upsert([
-      {
-        created_by: user?.id,
+    if (user) {
+      const eventData: EventData = {
+        created_by: user.id,
         event_name: eventName,
         date: eventDate,
         start_time: eventStartTime,
         end_time: eventEndTime,
         location_id: location.id,
+        description: eventDescription,
         max_participants: maxParticipants,
         event_fee: eventFee,
-      },
-    ]);
+      };
+      const res = createEvent(eventData);
 
-        if (eventError) {
-      console.error("Event error", eventError);
+      if (!(await res).success) {
+        console.error("Event error", (await res).error);
+      } else {
+        console.log("Event created successfully");
+        router.push("/create/success");
+      }
+    } else {
+      console.error("User not found, cannot create event.");
+      alert("You must be logged in to create an event.");
+      router.push("/login");
     }
-
-    router.push("/success")
 
     setLoading(false);
   };
