@@ -52,19 +52,20 @@ export default function EventPage({
         setEvent(eventData);
       }
 
-      if (event?.location_id) {
-        const { data: locationData, error: locationError } = await supabase
-          .from("locations")
-          .select("*")
-          .eq("id", event.location_id)
-          .single();
+      const { data: locationData, error: locationError } = await supabase
+        .from("locations")
+        .select("*")
+        .eq("id", eventData.location_id)
+        .single();
 
-        if (locationError) {
-          console.error("Error fetching location:", locationError);
-        } else {
-          setLocation(locationData);
-        }
+      if (locationError) {
+        console.error("Error fetching location:", locationError);
+      } else {
+        setLocation(locationData);
       }
+
+      console.log("Event data fetched:", eventData);
+      console.log("Location data fetched:", location);
       setLoading(false);
     };
 
@@ -91,15 +92,36 @@ export default function EventPage({
   return (
     <div className="p-12">
       <h1 className="text-4xl font-bold mb-4">{event.event_name}</h1>
-      <p className="text-lg mb-2">Created by: {event.created_by}</p>
-      <p className="text-lg mb-2">Date: {event.date}</p>
       <p className="text-lg mb-2">
-        Time: {event.start_time} - {event.end_time}
+        <span className="font-bold">Created by: </span> {event.created_by}
       </p>
-      <p className="text-lg mb-2">Location: {event.location_id}</p>
-      <p className="text-lg mb-2">Description: {event.description}</p>
-      <p className="text-lg mb-2">Max Participants: {event.max_participants}</p>
-      <p className="text-lg mb-2">Event Fee: ${event.event_fee || "Free"}</p>
+      <p className="text-lg mb-2">
+        <span className="font-bold">Date: </span> {event.date}
+      </p>
+      <p className="text-lg mb-2">
+        <span className="font-bold">Time: </span> {event.start_time} -{" "}
+        {event.end_time}
+      </p>
+      <p className="text-lg mb-2">
+        <span className="font-bold">Max Participants: </span>{" "}
+        {event.max_participants}
+      </p>
+      <p className="text-lg mb-2">
+        <span className="font-bold">Event Fee: </span> $
+        {event.event_fee || "Free"}
+      </p>
+      {location && (
+        <p className="text-lg mb-2">
+          <span className="font-bold">Location: </span> <br />
+          <span>{location.name}</span>
+          <br />
+          {location.address}
+        </p>
+      )}
+      <p className="text-lg mb-2">
+        <span className="font-bold">Description: </span> <br />
+        {event.description}
+      </p>
     </div>
   );
 }
