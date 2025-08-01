@@ -1,20 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/app/lib/supabase";
-import type { User } from "@supabase/auth-js";
 import { User as UserIcon } from "lucide-react";
+import { useUserContext } from "../context/UserContext";
 
 export default function Navbar() {
-  const [user, setUser] = useState<User | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { user } = useUserContext();
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUser(user);
-    });
-  }, []);
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
@@ -52,7 +47,7 @@ export default function Navbar() {
                 <strong>{user?.user_metadata.name}</strong>
               </p>) : (<></>)}
               <Link
-                href="/events"
+                href="/event"
                 className="block px-4 py-2 hover:bg-gray-100"
                 onClick={() => setDropdownOpen(false)}
               >
