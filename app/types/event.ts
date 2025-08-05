@@ -9,15 +9,7 @@ type EventBase = {
   event_fee?: number;
 };
 
-export type EventFromDB = EventBase & {
-    id: string;
-    created_by: string;
-    location_id: string;
-    url_id: string;
-}
-
 export type EventToDisplay = EventBase & {
-    host_name: string;
-    location_name: string;
-    location_address: string;
-}
+  host: { name: string };
+  location: { name: string; address: string };
+};
