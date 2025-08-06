@@ -13,3 +13,4 @@ export type EventToDisplay = EventBase & {
   host: { name: string };
   location: { name: string; address: string };
 };
+

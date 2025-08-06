@@ -1,16 +1,88 @@
 import { EventToDisplay } from "@/app/types/event";
 
+const LabelValue = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) => (
+  <p className="flex">
+    <span className="font-bold">{label}</span>
+    <span className="ml-1">{value}</span>
+  </p>
+);
+
+const formatTime = (time: string) => {
+  const [hours, minutes] = time.split(":");
+  const ampm = +hours >= 12 ? "PM" : "AM";
+  const formattedHours = +hours % 12 || 12; // Convert to 12-hour format
+  return `${formattedHours}:${minutes} ${ampm}`;
+}
+
+const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const dateFormatted = date.toLocaleDateString("en-GB", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    });
+    return dateFormatted;
+}
+
 export default function EventCard({ event }: { event: EventToDisplay }) {
+  const {
+    event_name,
+    date,
+    start_time,
+    end_time,
+    event_fee,
+    max_participants,
+    location,
+    description,
+  } = event;
+
   return (
     <div className="event-card">
-      <h2>{event.event_name}</h2>
-      <p>{event.date}</p>
-      <p>{event.start_time} - {event.end_time}</p>
-      <p>Hosted by: {event.host["name"]}</p>
-      <p>Location: {event.location["name"]}, {event.location["address"]}</p>
-      <p>Description: {event.description}</p>
-      {event.max_participants && <p>Max Participants: {event.max_participants}</p>}
-      {event.event_fee && <p>Event Fee: ${event.event_fee.toFixed(2)}</p>}
+      <h1 className="text-2xl font-bold">{event_name}</h1>
+
+      <div className="flex w-full">
+        <div className="w-1/2 text-left">
+          <LabelValue label="Date:" value={formatDate(date)} />
+        </div>
+        <div className="w-1/2 text-left">
+          <LabelValue label="Time:" value={`${formatTime(start_time)} - ${formatTime(end_time)}`} />
+        </div>
+      </div>
+
+      <div className="flex w-full">
+        <div className="w-1/2 text-left">
+          <LabelValue
+            label="Fee:"
+            value={event_fee ? `$${event_fee.toFixed(2)}` : "Free"}
+          />
+        </div>
+        <div className="w-1/2 text-left">
+          <LabelValue
+            label="Participants"
+            value={max_participants ? `0/${max_participants}` : "0"}
+          />
+        </div>
+      </div>
+
+      <div>
+        <p className="font-bold">Location:</p>
+        <p className="leading-tight">
+          {location.name} <br />
+          {location.address}
+        </p>
+      </div>
+
+      <div>
+        <p className="font-bold">Description:</p>
+        <p className="leading-tight">{description}</p>
+      </div>
     </div>
   );
 }
