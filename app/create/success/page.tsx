@@ -7,7 +7,7 @@ export default function SuccessPage() {
       <p className="text-lg mb-6">
         Your event has been created. You can now share the link with your friends.
       </p>
-      <Link href="/events" className="text-blue-500 hover:underline">
+      <Link href="/event" className="text-blue-500 hover:underline">
         View My Events
       </Link>
     </div>

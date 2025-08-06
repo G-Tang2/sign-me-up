@@ -7,6 +7,7 @@ type EventBase = {
   description: string;
   max_participants?: number;
   event_fee?: number;
+  url_id: string;
 };
 
 export type EventToDisplay = EventBase & {

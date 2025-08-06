@@ -47,6 +47,13 @@ export default function Navbar() {
                 <strong>{user?.user_metadata.name}</strong>
               </p>) : (<></>)}
               <Link
+                href="/create"
+                className="block px-4 py-2 hover:bg-gray-100"
+                onClick={() => setDropdownOpen(false)}
+              >
+                Create Event
+              </Link>
+              <Link
                 href="/event"
                 className="block px-4 py-2 hover:bg-gray-100"
                 onClick={() => setDropdownOpen(false)}
@@ -57,7 +64,7 @@ export default function Navbar() {
                 onClick={handleSignOut}
                 className="w-full text-left px-4 py-2 hover:bg-gray-100"
               >
-                Sign out
+                Sign Out
               </button>
             </div>
           )}
