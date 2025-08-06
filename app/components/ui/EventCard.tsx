@@ -1,4 +1,6 @@
 import { EventToDisplay } from "@/app/types/event";
+import { formatTime } from "@/app/utils/timeFormatter";
+import { formatDate } from "@/app/utils/dateFormatter";
 import Link from "next/link";
 
 const LabelValue = ({
@@ -13,24 +15,6 @@ const LabelValue = ({
     <span className="ml-1">{value}</span>
   </p>
 );
-
-const formatTime = (time: string) => {
-  const [hours, minutes] = time.split(":");
-  const ampm = +hours >= 12 ? "PM" : "AM";
-  const formattedHours = +hours % 12 || 12; // Convert to 12-hour format
-  return `${formattedHours}:${minutes} ${ampm}`;
-};
-
-const formatDate = (dateStr: string) => {
-  const date = new Date(dateStr);
-  const dateFormatted = date.toLocaleDateString("en-GB", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-  return dateFormatted;
-};
 
 export default function EventCard({ event }: { event: EventToDisplay }) {
   const {

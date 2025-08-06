@@ -3,31 +3,16 @@
 import Spinner from "@/app/components/ui/Spinner";
 import { supabase } from "@/app/lib/supabase";
 import { use, useEffect, useState } from "react";
+import { formatTime } from "@/app/utils/timeFormatter";
+import { formatDate } from "@/app/utils/dateFormatter";
 
-type Event = {
-  id: string;
-  created_by: string;
-  event_name: string;
-  date: string;
-  start_time: string;
-  end_time: string;
-  location_id: string;
-  description: string;
-  max_participants?: number;
-  event_fee?: number;
-  url_id: string;
-};
 
 export default function EventPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const [event, setEvent] = useState<Event | null>(null);
-  const [location, setLocation] = useState<{
-    name: string;
-    address: string;
-  } | null>(null);
+  const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const resolvedParams = use(params);
@@ -39,9 +24,30 @@ export default function EventPage({
     const fetchData = async () => {
       const { data: eventData, error: eventError } = await supabase
         .from("events")
-        .select("*")
+        .select(
+          `
+          created_at,
+          event_name,
+          date,
+          start_time,
+          end_time,
+          description,
+          max_participants,
+          event_fee,
+          url_id,
+          host:users (
+            name
+          ),
+          location:locations (
+            name,
+            address
+          )
+        `
+        )
         .eq("url_id", id)
         .single();
+
+        console.log("Event data:", eventData);
 
       if (eventError) {
         console.error("Error fetching event:", eventError);
@@ -52,20 +58,7 @@ export default function EventPage({
         setEvent(eventData);
       }
 
-      const { data: locationData, error: locationError } = await supabase
-        .from("locations")
-        .select("*")
-        .eq("id", eventData.location_id)
-        .single();
-
-      if (locationError) {
-        console.error("Error fetching location:", locationError);
-      } else {
-        setLocation(locationData);
-      }
-
       console.log("Event data fetched:", eventData);
-      console.log("Location data fetched:", location);
       setLoading(false);
     };
 
@@ -89,26 +82,35 @@ export default function EventPage({
     return <p>Event not found.</p>;
   }
 
+  const {
+    event_name,
+    date,
+    start_time,
+    end_time,
+    max_participants,
+    event_fee,
+    description,
+    host,
+    location
+  } = event;
+  console.log("Event details:", event);
+
+
   return (
     <div className="p-12">
-      <h1 className="text-4xl font-bold mb-4">{event.event_name}</h1>
+      <h1 className="text-4xl font-bold mb-4">{event_name}</h1>
       <p className="text-lg mb-2">
-        <span className="font-bold">Created by: </span> {event.created_by}
+        <span className="font-bold">Created by: </span> {host.name}
       </p>
       <p className="text-lg mb-2">
-        <span className="font-bold">Date: </span> {event.date}
+        <span className="font-bold">Date: </span> {formatDate(date)}
       </p>
       <p className="text-lg mb-2">
-        <span className="font-bold">Time: </span> {event.start_time} -{" "}
-        {event.end_time}
+        <span className="font-bold">Time: </span> {formatTime(start_time)} - {formatTime(end_time)}
       </p>
       <p className="text-lg mb-2">
-        <span className="font-bold">Max Participants: </span>{" "}
-        {event.max_participants}
-      </p>
-      <p className="text-lg mb-2">
-        <span className="font-bold">Event Fee: </span> $
-        {event.event_fee || "Free"}
+        <span className="font-bold">Event Fee: </span>
+        {event_fee ? `$${event_fee}` : "Free"}
       </p>
       {location && (
         <p className="text-lg mb-2">
@@ -120,7 +122,7 @@ export default function EventPage({
       )}
       <p className="text-lg mb-2">
         <span className="font-bold">Description: </span> <br />
-        {event.description}
+        {description}
       </p>
     </div>
   );
