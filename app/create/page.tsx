@@ -229,6 +229,7 @@ export default function CreatePage() {
               value={(eventLocation.name + " " + eventLocation.address).trim()}
               onChange={handleLocationChange}
               onRetrieve={handleRetrieve}
+              required={true}
             />
           </div>
           <FormInputField
@@ -258,6 +259,7 @@ export default function CreatePage() {
             value={eventDescription}
             onChange={(e) => setEventDescription(e.target.value)}
             multiLine={true}
+            required={true}
           />
         </div>
         <Button text="Submit" />
