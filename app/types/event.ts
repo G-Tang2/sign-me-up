@@ -11,7 +11,7 @@ type EventBase = {
 };
 
 export type EventToDisplay = EventBase & {
-  host: { name: string }[];
-  location: { name: string; address: string }[];
+  host: { name: string };
+  location: { name: string; address: string };
 };
 
