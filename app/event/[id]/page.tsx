@@ -6,6 +6,7 @@ import { use, useEffect, useState } from "react";
 import { formatTime } from "@/app/utils/timeFormatter";
 import { formatDate } from "@/app/utils/dateFormatter";
 import { useUserContext } from "@/app/context/UserContext";
+import { fetchParticipants } from "@/app/lib/fetchParticipants";
 
 export default function EventPage({
   params,
@@ -29,7 +30,6 @@ export default function EventPage({
         .select(
           `
           id,
-          host_id,
           event_name,
           date,
           start_time,
@@ -61,18 +61,8 @@ export default function EventPage({
         setEvent(eventData);
       }
 
-      const { data: participantsData, error: participantsError } =
-        await supabase
-          .from("participants")
-          .select("users(name)")
-          .eq("event_id", eventData.id);
-
-      if (participantsError) {
-        console.error("Error fetching participants:", participantsError);
-      } else {
-        console.log("Participants data:", participantsData);
-        setParticipants(participantsData || []);
-      }
+      const participantsData = await fetchParticipants(eventData.id);
+      setParticipants(participantsData);
 
       setLoading(false);
     };
@@ -119,6 +109,9 @@ export default function EventPage({
     if (error) {
       console.error("Error adding participant:", error);
     }
+
+    const participantsData = await fetchParticipants(event.id);
+    setParticipants(participantsData);
   };
 
   return (
@@ -150,6 +143,18 @@ export default function EventPage({
         <span className="font-bold">Description: </span> <br />
         {description}
       </p>
+      <div className="text-lg mb-2">
+        <span className="font-bold">Participants: {max_participants && `(${participants.length}/${max_participants})`}</span>
+        <ul>
+          {participants.length > 0 ? (
+            participants.map((participant, index) => (
+              <li key={index}>{index+1}. {participant.users.name}</li>
+            ))
+          ) : (
+            <li>No participants yet.</li>
+          )}
+          </ul>
+        </div>
       <button
         className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         onClick={handleClick}
