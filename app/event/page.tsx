@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useUserContext } from "../context/UserContext";
 import { supabase } from "../lib/supabase";
 import EventCard from "../components/ui/EventCard";
+import { fetchParticipants } from "../lib/fetchParticipants";
 
 export default function UserEventPage() {
   const { user, loading } = useUserContext();
@@ -14,10 +15,11 @@ export default function UserEventPage() {
     const getEvents = async () => {
       if (!user) return;
 
-      const { data, error } = await supabase
+      const { data: eventData, error: eventError } = await supabase
         .from("events")
         .select(
           `
+          id,
           created_at,
           event_name,
           date,
@@ -38,10 +40,15 @@ export default function UserEventPage() {
         )
         .eq("host_id", user.id);
 
-      if (error) {
-        console.error("Error fetching events:", error);
+      if (eventError) {
+        console.error("Error fetching events:", eventError);
       } else {
-        setEvents(data || []);
+        const eventsWithParticipants = []
+        for (const event of eventData) {
+          const participants = await fetchParticipants(event.id);
+          eventsWithParticipants.push({ ...event, participants: participants });
+        }
+        setEvents(eventsWithParticipants);
       }
 
       setFetching(false);

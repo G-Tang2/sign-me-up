@@ -16,7 +16,7 @@ const LabelValue = ({
   </p>
 );
 
-export default function EventCard({ event }: { event: EventToDisplay }) {
+export default function EventCard({ event }: { event: EventToDisplay}) {
   const {
     event_name,
     date,
@@ -24,6 +24,7 @@ export default function EventCard({ event }: { event: EventToDisplay }) {
     end_time,
     event_fee,
     max_participants,
+    participants,
     location,
     description,
     url_id,
@@ -59,7 +60,7 @@ export default function EventCard({ event }: { event: EventToDisplay }) {
           <div className="w-1/2 text-left">
             <LabelValue
               label="Participants"
-              value={max_participants ? `0/${max_participants}` : "0"}
+              value={max_participants ? `${participants.length}/${max_participants}` : participants.length}
             />
           </div>
         </div>
