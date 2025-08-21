@@ -36,7 +36,7 @@ export default function UserEventPage() {
           )
         `
         )
-        .eq("created_by", user.id);
+        .eq("host_id", user.id);
 
       if (error) {
         console.error("Error fetching events:", error);

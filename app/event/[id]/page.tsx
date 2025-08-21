@@ -5,7 +5,7 @@ import { supabase } from "@/app/lib/supabase";
 import { use, useEffect, useState } from "react";
 import { formatTime } from "@/app/utils/timeFormatter";
 import { formatDate } from "@/app/utils/dateFormatter";
-
+import { useUserContext } from "@/app/context/UserContext";
 
 export default function EventPage({
   params,
@@ -13,11 +13,13 @@ export default function EventPage({
   params: Promise<{ id: string }>;
 }) {
   const [event, setEvent] = useState<any>(null);
+  const [participants, setParticipants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const resolvedParams = use(params);
 
   const id = resolvedParams.id;
+  const { user } = useUserContext();
 
   useEffect(() => {
     console.log("Fetching event with ID:", id);
@@ -26,7 +28,8 @@ export default function EventPage({
         .from("events")
         .select(
           `
-          created_at,
+          id,
+          host_id,
           event_name,
           date,
           start_time,
@@ -47,7 +50,7 @@ export default function EventPage({
         .eq("url_id", id)
         .single();
 
-        console.log("Event data:", eventData);
+      console.log("Event data:", eventData);
 
       if (eventError) {
         console.error("Error fetching event:", eventError);
@@ -58,7 +61,19 @@ export default function EventPage({
         setEvent(eventData);
       }
 
-      console.log("Event data fetched:", eventData);
+      const { data: participantsData, error: participantsError } =
+        await supabase
+          .from("participants")
+          .select("users(name)")
+          .eq("event_id", eventData.id);
+
+      if (participantsError) {
+        console.error("Error fetching participants:", participantsError);
+      } else {
+        console.log("Participants data:", participantsData);
+        setParticipants(participantsData || []);
+      }
+
       setLoading(false);
     };
 
@@ -91,10 +106,20 @@ export default function EventPage({
     event_fee,
     description,
     host,
-    location
+    location,
   } = event;
   console.log("Event details:", event);
 
+  const handleClick = async () => {
+    console.log("Adding participant for user:", user?.id);
+    console.log("Event ID:", event.id);
+    const { error } = await supabase
+      .from("participants")
+      .insert([{ event_id: event.id, waitlist: false, user_id: user?.id }]);
+    if (error) {
+      console.error("Error adding participant:", error);
+    }
+  };
 
   return (
     <div className="p-12">
@@ -106,7 +131,8 @@ export default function EventPage({
         <span className="font-bold">Date: </span> {formatDate(date)}
       </p>
       <p className="text-lg mb-2">
-        <span className="font-bold">Time: </span> {formatTime(start_time)} - {formatTime(end_time)}
+        <span className="font-bold">Time: </span> {formatTime(start_time)} -{" "}
+        {formatTime(end_time)}
       </p>
       <p className="text-lg mb-2">
         <span className="font-bold">Event Fee: </span>
@@ -124,6 +150,12 @@ export default function EventPage({
         <span className="font-bold">Description: </span> <br />
         {description}
       </p>
+      <button
+        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        onClick={handleClick}
+      >
+        Add Participant
+      </button>
     </div>
   );
 }

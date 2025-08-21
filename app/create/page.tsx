@@ -20,7 +20,7 @@ const SearchBoxWrapper = dynamic(
 type MaxParticipants = number | undefined;
 type EventFee = number | undefined;
 type EventData = {
-  created_by: string;
+  host_id: string;
   event_name: string;
   date: string;
   start_time: string;
@@ -108,7 +108,7 @@ export default function CreatePage() {
         ? undefined
         : maxParticipants
     );
-    console.log("created by: ", user?.id);
+    console.log("host id: ", user?.id);
     console.log("event name: ", eventName);
     console.log("event date: ", eventDate);
     console.log("event start time: ", eventStartTime);
@@ -138,7 +138,7 @@ export default function CreatePage() {
 
     if (user) {
       const eventData: EventData = {
-        created_by: user.id,
+        host_id: user.id,
         event_name: eventName,
         date: eventDate,
         start_time: eventStartTime,
