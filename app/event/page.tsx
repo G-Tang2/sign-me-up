@@ -5,6 +5,7 @@ import { useUserContext } from "../context/UserContext";
 import { supabase } from "../lib/supabase";
 import EventCard from "../components/ui/EventCard";
 import { fetchParticipants } from "../lib/fetchParticipants";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function UserEventPage() {
   const { user, loading } = useUserContext();
@@ -62,9 +63,11 @@ export default function UserEventPage() {
       console.log("Participant events:", participantEvents);
 
       if (participantEventsError) {
-        console.error("Error fetching participant events:", participantEventsError);
-      }
-      else {
+        console.error(
+          "Error fetching participant events:",
+          participantEventsError
+        );
+      } else {
         const eventsWithParticipants = [];
         for (const event of participantEvents) {
           const participants = await fetchParticipants(event.id);
@@ -125,30 +128,39 @@ export default function UserEventPage() {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Events</h1>
-      <h2 className="text-xl font-semibold mb-2">My Hosted Events</h2>
-      {hostEvents.length === 0 ? (
-        <p>No events found.</p>
-      ) : (
-        <ul className="space-y-4">
-          {hostEvents.map((event, index) => (
-            <li key={index}>
-              <EventCard event={event} />
-            </li>
-          ))}
-        </ul>
-      )}
-      <h2 className="text-xl font-semibold mb-2">My Upcoming Events</h2>
-      {participatingEvents.length === 0 ? (
-        <p>No events found.</p>
-      ) : (
-        <ul className="space-y-4">
-          {participatingEvents.map((event, index) => (
-            <li key={index}>
-              <EventCard event={event} />
-            </li>
-          ))}
-        </ul>
-      )}
+      <Tabs defaultValue="tab1">
+        <TabsList className="w-full">
+          <TabsTrigger value="tab1">My Hosted Events</TabsTrigger>
+          <TabsTrigger value="tab2">My Upcoming Events</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="tab1">
+          {hostEvents.length === 0 ? (
+            <p>No events found.</p>
+          ) : (
+            <ul className="space-y-4">
+              {hostEvents.map((event, index) => (
+                <li key={index}>
+                  <EventCard event={event} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </TabsContent>
+        <TabsContent value="tab2">
+          {participatingEvents.length === 0 ? (
+            <p>No events found.</p>
+          ) : (
+            <ul className="space-y-4">
+              {participatingEvents.map((event, index) => (
+                <li key={index}>
+                  <EventCard event={event} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
