@@ -8,6 +8,7 @@ import { supabase } from "@/app/lib/supabase";
 type UserContextType = {
     user: User | null;
     loading: boolean;
+    setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 const UserContext = createContext<UserContextType | null>(null);
 
@@ -32,7 +33,7 @@ export const UserProvider = ({ children }: {children: React.ReactNode}) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, loading }}>
+    <UserContext.Provider value={{ user, loading, setUser }}>
       {children}
     </UserContext.Provider>
   );

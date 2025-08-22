@@ -5,11 +5,12 @@ import { useState } from "react";
 import { supabase } from "@/app/lib/supabase";
 import { User as UserIcon } from "lucide-react";
 import { useUserContext } from "../context/UserContext";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const { user } = useUserContext();
-
+  const { user, setUser } = useUserContext();
+  const router = useRouter();
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
@@ -17,7 +18,9 @@ export default function Navbar() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    window.location.reload();
+    setUser(null)
+    setDropdownOpen(false);
+    router.push("/");
   };
 
   return (
