@@ -2,21 +2,16 @@ import { EventToDisplay } from "@/app/types/event";
 import { formatTime } from "@/app/utils/timeFormatter";
 import { formatDate } from "@/app/utils/dateFormatter";
 import Link from "next/link";
+import { LabelValue } from "./LabelValue";
+import {
+  CalendarDays,
+  CircleDollarSign,
+  Clock3,
+  MapPin,
+  Users,
+} from "lucide-react";
 
-const LabelValue = ({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) => (
-  <p className="flex">
-    <span className="font-bold">{label}</span>
-    <span className="ml-1">{value}</span>
-  </p>
-);
-
-export default function EventCard({ event }: { event: EventToDisplay}) {
+export default function EventCard({ event }: { event: EventToDisplay }) {
   const {
     event_name,
     date,
@@ -26,56 +21,47 @@ export default function EventCard({ event }: { event: EventToDisplay}) {
     max_participants,
     participants,
     location,
-    description,
     url_id,
   } = event;
 
   return (
     <Link
       href={`/event/${url_id}`}
-      className="block p-4 border rounded-lg hover:shadow-lg transition-shadow"
+      className="block px-5 py-3 border rounded-xl hover:shadow-lg transition-shadow bg-white"
     >
-      <div className="event-card">
-        <h1 className="text-2xl font-bold">{event_name}</h1>
-
-        <div className="flex w-full">
-          <div className="w-1/2 text-left">
-            <LabelValue label="Date:" value={formatDate(date)} />
+      <div className="space-y-1 mb-1">
+        <h1 className="text-xl font-bold leading-tight">{event_name}</h1>
+        <div className="grid grid-cols-3">
+          <div className="col-span-2">
+            <LabelValue icon={CalendarDays} value={formatDate(date)} />
           </div>
-          <div className="w-1/2 text-left">
+          <div className="col-span-1">
             <LabelValue
-              label="Time:"
-              value={`${formatTime(start_time)} - ${formatTime(end_time)}`}
-            />
-          </div>
-        </div>
-
-        <div className="flex w-full">
-          <div className="w-1/2 text-left">
-            <LabelValue
-              label="Fee:"
+              icon={CircleDollarSign}
               value={event_fee ? `$${event_fee.toFixed(2)}` : "Free"}
             />
           </div>
-          <div className="w-1/2 text-left">
+        </div>
+        <div className="grid grid-cols-3">
+          <div className="col-span-2">
             <LabelValue
-              label="Participants"
-              value={max_participants ? `${participants.length}/${max_participants}` : participants.length}
+              icon={Clock3}
+              value={`${formatTime(start_time)} - ${formatTime(end_time)}`}
+            />
+          </div>
+          <div className="col-span-1">
+            <LabelValue
+              icon={Users}
+              value={
+                max_participants
+                  ? `${participants.length}/${max_participants}`
+                  : participants.length
+              }
             />
           </div>
         </div>
-
         <div>
-          <p className="font-bold">Location:</p>
-          <p className="leading-tight">
-            {location.name} <br />
-            {location.address}
-          </p>
-        </div>
-
-        <div>
-          <p className="font-bold">Description:</p>
-          <p className="leading-tight">{description}</p>
+          <LabelValue icon={MapPin} value={location.name} />
         </div>
       </div>
     </Link>
