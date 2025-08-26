@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabase";
 import { nanoid } from "nanoid";
-import Button from "../components/ui/Button";
+import { Button } from "@/components/ui/button";
 import FormInputField from "../components/ui/FormInputField";
 import Time from "../components/ui/Time";
 import Spinner from "../components/ui/Spinner";
@@ -86,7 +86,10 @@ export default function CreatePage() {
       }
       attempts++;
     }
-    return { success: false, error: 'Too many attempts (5) to generate unique short id' };
+    return {
+      success: false,
+      error: "Too many attempts (5) to generate unique short id",
+    };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -262,7 +265,7 @@ export default function CreatePage() {
             required={true}
           />
         </div>
-        <Button text="Submit" />
+        <Button>Submit</Button>
       </form>
     </div>
   );

@@ -1,10 +1,11 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { supabase } from "./lib/supabase";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import Button from "./components/ui/Button";
 import Spinner from "./components/ui/Spinner";
+
 
 export default function Home() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function Home() {
           <Spinner />
         </div>
       ) : (
-        <Button text="Get Started" onClick={handleClick} />
+        <Button onClick={handleClick}>Get Started</Button>
       )}
     </main>
   );

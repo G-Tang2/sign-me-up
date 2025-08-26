@@ -3,7 +3,7 @@ import { supabase } from "./supabase";
 export async function fetchParticipants(eventId: string) {
   const { data: participantsData, error: participantsError } = await supabase
     .from("participants")
-    .select("users(name)")
+    .select("created_at, users(name), display_name")
     .eq("event_id", eventId);
 
   if (participantsError) {
