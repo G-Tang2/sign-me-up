@@ -50,7 +50,7 @@ export default function Time({
           label="Start Time"
           type="time"
           value={leftValue}
-          onChange={(e) => handleLeftChange(e)}
+          onChange={(e) => handleLeftChange(e as React.ChangeEvent<HTMLInputElement>)}
           required={required}
         />
       </div>
@@ -66,7 +66,7 @@ export default function Time({
             }
           )}
           value={rightValue}
-          onChange={(e) => handleRightChange(e)}
+          onChange={(e) => handleRightChange(e as React.ChangeEvent<HTMLInputElement>)}
           required={required}
         />
         {error && <p className="text-xs text-red-500 mt-1">End time must be after start time</p>}
