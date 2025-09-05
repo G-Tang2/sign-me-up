@@ -130,16 +130,16 @@ export default function UserEventPage() {
       <h1 className="text-2xl font-bold mb-4">Events</h1>
       <Tabs defaultValue="tab1">
         <TabsList className="w-full">
-          <TabsTrigger value="tab1">My Hosted Events</TabsTrigger>
-          <TabsTrigger value="tab2">My Upcoming Events</TabsTrigger>
+          <TabsTrigger value="tab1">My Upcoming Events</TabsTrigger>
+          <TabsTrigger value="tab2">My Hosted Events</TabsTrigger>
         </TabsList>
 
         <TabsContent value="tab1">
-          {hostEvents.length === 0 ? (
+          {participatingEvents.length === 0 ? (
             <p>No events found.</p>
           ) : (
             <ul className="space-y-4">
-              {hostEvents.map((event, index) => (
+              {participatingEvents.map((event, index) => (
                 <li key={index}>
                   <EventCard event={event} />
                 </li>
@@ -148,11 +148,11 @@ export default function UserEventPage() {
           )}
         </TabsContent>
         <TabsContent value="tab2">
-          {participatingEvents.length === 0 ? (
+          {hostEvents.length === 0 ? (
             <p>No events found.</p>
           ) : (
             <ul className="space-y-4">
-              {participatingEvents.map((event, index) => (
+              {hostEvents.map((event, index) => (
                 <li key={index}>
                   <EventCard event={event} />
                 </li>
