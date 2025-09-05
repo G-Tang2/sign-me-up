@@ -163,6 +163,12 @@ export default function EventPage({
     setRemoveParticipantOpen(true);
   }
 
+  function canModifyParticipant(participant: any, userId: string | undefined) {
+    return (
+      participant.user_id === userId || participant.events.host_id === userId
+    );
+  }
+
   return (
     <div className="p-8">
       <h1 className="text-4xl font-bold mb-4">{event_name}</h1>
@@ -213,7 +219,7 @@ export default function EventPage({
                     {formatDateTime(participant.created_at)}
                   </span>
                 </div>
-                {participant.user_id === user?.id && (
+                {canModifyParticipant(participant, user?.id) && (
                   <Dialog
                     open={removeParticipantOpen}
                     onOpenChange={setRemoveParticipantOpen}
