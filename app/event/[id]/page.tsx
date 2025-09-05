@@ -8,7 +8,7 @@ import { formatDate } from "@/app/utils/dateFormatter";
 import { useUserContext } from "@/app/context/UserContext";
 import { fetchParticipants } from "@/app/lib/fetchParticipants";
 import { formatDateTime } from "@/app/utils/formatDateTime";
-import { UserPlus } from "lucide-react";
+import { CircleMinus, UserPlus } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -20,7 +20,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
 export default function EventPage({
@@ -31,7 +30,9 @@ export default function EventPage({
   const [event, setEvent] = useState<any>(null);
   const [participants, setParticipants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
+  const [addParticipantOpen, setAddParticipantOpen] = useState(false);
+  const [removeParticipantOpen, setRemoveParticipantOpen] = useState(false);
+  const [selectedParticipant, setSelectedParticipant] = useState<any>(null);
   const [name, setName] = useState("");
 
   const resolvedParams = use(params);
@@ -115,26 +116,19 @@ export default function EventPage({
     host,
     location,
   } = event;
-  console.log("Event details:", event);
 
   const handleClick = async () => {
-    console.log("Adding participant for user:", user?.id);
-    console.log("User name input:", name);
-    console.log("Event ID:", event.id);
     if (user) {
-      // Build participant object
       const participant: any = {
         event_id: event.id,
         waitlist: false,
         user_id: user.id,
       };
 
-      // Only include name if it's not empty
       if (name.trim() !== "") {
         participant.display_name = name.trim();
       }
 
-      // Insert into Supabase
       const { error } = await supabase
         .from("participants")
         .insert([participant]);
@@ -148,54 +142,132 @@ export default function EventPage({
     setParticipants(participantsData);
   };
 
+  async function handleRemove() {
+    if (selectedParticipant) {
+      const { error } = await supabase
+        .from("participants")
+        .delete()
+        .eq("id", selectedParticipant.id);
+      if (error) {
+        console.error("Error removing participant:", error);
+      }
+      const participantsData = await fetchParticipants(event.id);
+      setParticipants(participantsData);
+    }
+    setRemoveParticipantOpen(false);
+    setSelectedParticipant(null);
+  }
+
+  function handleOpen(participant: any): void {
+    setSelectedParticipant(participant);
+    setRemoveParticipantOpen(true);
+  }
+
   return (
     <div className="p-8">
       <h1 className="text-4xl font-bold mb-4">{event_name}</h1>
-      <p className="text-lg">
+      <p>
         <span className="font-bold">Created by: </span> {host.name}
       </p>
-      <p className="text-lg">
+      <p>
         <span className="font-bold">Date: </span> {formatDate(date)}
       </p>
-      <p className="text-lg">
+      <p>
         <span className="font-bold">Time: </span> {formatTime(start_time)} -{" "}
         {formatTime(end_time)}
       </p>
-      <p className="text-lg">
+      <p>
         <span className="font-bold">Event Fee: </span>
         {event_fee ? `$${event_fee}` : "Free"}
       </p>
       {location && (
-        <p className="text-lg">
+        <p>
           <span className="font-bold">Location: </span> <br />
           <span>{location.name}</span>
           <br />
           {location.address}
         </p>
       )}
-      <p className="text-lg">
+      <p>
         <span className="font-bold">Description: </span> <br />
         {description}
       </p>
-      <div className="text-lg">
+      <div>
         <span className="font-bold">
           Participants:{" "}
           {max_participants && `(${participants.length}/${max_participants})`}
         </span>
-        <ul>
+        <ul className="mt-1 w-full border border-gray-200 rounded-md divide-y divide-gray-200">
           {participants.length > 0 ? (
             participants.map((participant, index) => (
-              <li key={index} className="flex justify-between items-baseline">
-                <span>{index + 1}. {participant.display_name || participant.users.name}</span>
-                <span className="text-xs text-gray-600">{formatDateTime(participant.created_at)} by {participant.users.name}</span>
+              <li
+                key={index}
+                className="flex justify-between items-center px-4 py-2 hover:bg-gray-50"
+              >
+                <div>
+                  <span className="font-medium">
+                    {index + 1}.{" "}
+                    {participant.display_name || participant.users.name}
+                  </span>
+                  <span className="ml-2 text-xs text-gray-600">
+                    {formatDateTime(participant.created_at)}
+                  </span>
+                </div>
+                {participant.user_id === user?.id && (
+                  <Dialog
+                    open={removeParticipantOpen}
+                    onOpenChange={setRemoveParticipantOpen}
+                  >
+                    <DialogTrigger asChild>
+                      <button
+                        className="text-red-500 hover:text-red-700"
+                        onClick={() => handleOpen(participant)}
+                      >
+                        <CircleMinus className="cursor-pointer" />
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>
+                          Remove{" "}
+                          {selectedParticipant?.display_name ||
+                            selectedParticipant?.users.name}
+                          ?
+                        </DialogTitle>
+                      </DialogHeader>
+                      <DialogFooter className="flex flex-row justify-end gap-4 w-full">
+                        <DialogClose asChild>
+                          <Button
+                            className="flex-1"
+                            variant="outline"
+                            type="button"
+                            onClick={handleRemove}
+                          >
+                            No
+                          </Button>
+                        </DialogClose>
+                        <DialogClose asChild>
+                          <Button
+                            className="flex-1"
+                            variant="destructive"
+                            type="button"
+                            onClick={handleRemove}
+                          >
+                            Yes
+                          </Button>
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                )}
               </li>
             ))
           ) : (
-            <li>No participants yet.</li>
+            <li className="px-4 py-2 text-gray-500">No participants yet.</li>
           )}
         </ul>
       </div>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={addParticipantOpen} onOpenChange={setAddParticipantOpen}>
         <DialogTrigger asChild>
           <Button variant="outline" className="mt-4 w-full">
             <UserPlus className="cursor-pointer" />
@@ -208,9 +280,6 @@ export default function EventPage({
           </DialogHeader>
           <div className="flex items-center gap-2">
             <div className="grid flex-1 gap-2">
-              <Label htmlFor="link" className="sr-only">
-                Link
-              </Label>
               <Input
                 id="name"
                 placeholder="Enter a name (optional)"
